@@ -1,0 +1,12 @@
+[
+  {
+    "id": "instance_1761131578981",
+    "name": "N8N Master (NAS)",
+    "url": "https://n8n.aiagent.synology.me/",
+    "environment": "development",
+    "apiKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlOGM0NDJiZC0wM2Y3LTQyNmMtOWM4Mi03OWNiMjM1YmU4OTciLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzYxMTMwMTAyfQ.h42iq8T0K6l_pB3oC-frMt0Kf0BNK9VckjFTajKNysg",
+    "isActive": true,
+    "createdAt": "2025-10-22T11:12:58.981Z",
+    "updatedAt": "2025-10-22T11:12:58.981Z"
+  }
+]
