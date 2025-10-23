@@ -123,7 +123,7 @@ export function Navigation() {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-white/30 bg-gradient-to-b from-emerald-600 to-green-600">
+          <div className="md:hidden border-t border-white/30 bg-gradient-to-r from-emerald-600 to-green-600">
             <div className="px-2 pt-2 pb-3 space-y-1">
               {navigationItems.map((item) => {
                 const Icon = item.icon

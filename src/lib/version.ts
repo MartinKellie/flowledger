@@ -3,7 +3,7 @@
  * Update this file to change the version displayed across the application
  */
 
-export const APP_VERSION = '1.2.0'
+export const APP_VERSION = '1.4.0'
 export const APP_NAME = 'FlowLedger'
 export const APP_DESCRIPTION = 'n8n Workflow Security Tracker'
 
