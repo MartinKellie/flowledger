@@ -38,6 +38,35 @@ export default function DashboardPage() {
   // Modal state for finding details
   const [selectedFinding, setSelectedFinding] = useState<any>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  
+  // Fetch detailed workflow data for proper classification
+  const [detailedWorkflows, setDetailedWorkflows] = useState<any[]>([])
+  
+  useEffect(() => {
+    const fetchDetailedWorkflows = async () => {
+      if (instances.length === 0) return
+      
+      try {
+        const workflowPromises = instances.map(async (instance) => {
+          try {
+            const response = await fetch(`/api/instances/${instance.id}/workflows`)
+            if (!response.ok) return []
+            const result = await response.json()
+            return result.success && result.data ? result.data : []
+          } catch (error) {
+            return []
+          }
+        })
+        
+        const results = await Promise.all(workflowPromises)
+        setDetailedWorkflows(results.flat())
+      } catch (error) {
+        console.error('Error fetching detailed workflows:', error)
+      }
+    }
+    
+    fetchDetailedWorkflows()
+  }, [instances])
 
   useEffect(() => {
     if (status === 'loading') return // Still loading
@@ -58,13 +87,19 @@ export default function DashboardPage() {
     return null
   }
 
+  // Calculate workflow stats based on naming convention
+  const activeWorkflowsCount = detailedWorkflows.filter(w => w.name?.startsWith('(') && w.isActive).length
+  const inactiveWorkflowsCount = detailedWorkflows.filter(w => w.name?.startsWith('(') && !w.isActive).length
+  const archivedWorkflowsCount = detailedWorkflows.filter(w => !w.name?.startsWith('(')).length
+  
   // Real data from API
   const stats = {
     totalInstances: instanceStats.totalInstances,
     activeInstances: instanceStats.activeInstances,
-    totalWorkflows: workflowStats.totalWorkflows,
-    activeWorkflows: workflowStats.activeWorkflows,
-    inactiveWorkflows: workflowStats.inactiveWorkflows,
+    totalWorkflows: detailedWorkflows.length || workflowStats.totalWorkflows,
+    activeWorkflows: activeWorkflowsCount,
+    inactiveWorkflows: inactiveWorkflowsCount,
+    archivedWorkflows: archivedWorkflowsCount,
     totalCredentials: credentialStats.totalCredentials,
     uniqueCredentials: credentialStats.uniqueCredentials,
     activeFindings: securityStats.activeFindings,
@@ -253,12 +288,16 @@ export default function DashboardPage() {
                   {stats.totalWorkflows > 0 && (
                     <div className="mt-2 space-y-1">
                       <div className="flex justify-between text-xs">
-                        <span className="text-purple-800">Active</span>
-                        <span className="font-medium text-purple-900">{stats.activeWorkflows}</span>
+                        <span className="text-green-700">Active</span>
+                        <span className="font-medium text-green-800">{stats.activeWorkflows}</span>
                       </div>
                       <div className="flex justify-between text-xs">
-                        <span className="text-purple-600">Inactive</span>
-                        <span className="font-medium text-purple-800">{stats.inactiveWorkflows}</span>
+                        <span className="text-gray-600">Inactive</span>
+                        <span className="font-medium text-gray-700">{stats.inactiveWorkflows}</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-amber-600">Archived</span>
+                        <span className="font-medium text-amber-700">{stats.archivedWorkflows}</span>
                       </div>
                     </div>
                   )}

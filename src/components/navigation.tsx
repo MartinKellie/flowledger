@@ -27,7 +27,6 @@ export function Navigation() {
     { name: 'Instances', href: '/instances', icon: Server },
     { name: 'Workflows', href: '/workflows', icon: Workflow },
     { name: 'Credentials', href: '/credentials', icon: Key },
-    { name: 'Settings', href: '/settings', icon: Settings },
   ]
 
   const handleSignOut = async () => {

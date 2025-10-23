@@ -33,8 +33,8 @@ export function ElapsedTimer({ lastScanDate }: ElapsedTimerProps) {
   }, [lastScanDate])
 
   return (
-    <div className="flex flex-col items-end gap-1 flex-shrink-0">
-      <div className="text-[10px] font-medium text-emerald-700">Elapsed</div>
+    <div className="flex items-center gap-2 flex-shrink-0">
+      <div className="text-xs font-medium text-emerald-700">Elapsed</div>
       <div className="bg-gradient-to-b from-gray-900 to-gray-800 rounded px-2 py-1.5 shadow-inner border border-gray-700">
         <div 
           className="text-xl font-bold tracking-wider text-center"

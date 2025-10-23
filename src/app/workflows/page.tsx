@@ -22,7 +22,8 @@ import {
   User,
   Tag,
   Boxes,
-  ExternalLink
+  ExternalLink,
+  Archive
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { Workflow } from '@/types'
@@ -52,6 +53,7 @@ export default function WorkflowsPage() {
   const [workflows, setWorkflows] = useState<WorkflowWithInstance[]>([])
   const [workflowsLoading, setWorkflowsLoading] = useState(true)
   const [expandedWorkflowId, setExpandedWorkflowId] = useState<string | null>(null)
+  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive' | 'archived'>('all')
 
   useEffect(() => {
     if (status === 'loading') return
@@ -111,6 +113,25 @@ export default function WorkflowsPage() {
     fetchAllWorkflows()
   }
 
+  // Get workflow status
+  const getWorkflowStatus = (workflow: WorkflowWithInstance): 'active' | 'inactive' | 'archived' => {
+    const isArchived = !workflow.name.startsWith('(')
+    return isArchived ? 'archived' : (workflow.isActive ? 'active' : 'inactive')
+  }
+
+  // Sort and filter workflows
+  const sortedAndFilteredWorkflows = workflows
+    .filter(workflow => {
+      if (filterStatus === 'all') return true
+      return getWorkflowStatus(workflow) === filterStatus
+    })
+    .sort((a, b) => {
+      const statusOrder = { active: 1, inactive: 2, archived: 3 }
+      const statusA = getWorkflowStatus(a)
+      const statusB = getWorkflowStatus(b)
+      return statusOrder[statusA] - statusOrder[statusB]
+    })
+
   if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -137,40 +158,80 @@ export default function WorkflowsPage() {
               Monitor and manage workflows across all your n8n instances
             </p>
           </div>
-          <div className="flex space-x-2">
-            <Button
-              variant="outline"
-              onClick={handleRefresh}
-              disabled={loading || workflowsLoading}
-            >
-              <RefreshCw className={`mr-2 h-4 w-4 ${(loading || workflowsLoading) ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
-            <Button variant="outline">
-              <Filter className="mr-2 h-4 w-4" />
-              Filter
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            onClick={handleRefresh}
+            disabled={loading || workflowsLoading}
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${(loading || workflowsLoading) ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-gradient-to-br from-green-50 to-emerald-100 border-green-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-green-900">Active Workflows</CardTitle>
+              <CheckCircle className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              {workflowsLoading ? (
+                <div className="flex items-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
+                  <span className="text-sm text-green-700">Loading...</span>
+                </div>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-green-800">
+                    {workflows.filter(w => w.name.startsWith('(') && w.isActive).length}
+                  </div>
+                  <p className="text-xs text-green-700">
+                    Currently running
+                  </p>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-gray-50 to-slate-100 border-gray-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-900">Inactive Workflows</CardTitle>
+              <XCircle className="h-4 w-4 text-gray-500" />
+            </CardHeader>
+            <CardContent>
+              {workflowsLoading ? (
+                <div className="flex items-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                  <span className="text-sm text-gray-700">Loading...</span>
+                </div>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-gray-700">
+                    {workflows.filter(w => w.name.startsWith('(') && !w.isActive).length}
+                  </div>
+                  <p className="text-xs text-gray-700">
+                    Not running
+                  </p>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
           <Card className="bg-gradient-to-br from-purple-50 to-fuchsia-100 border-purple-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-purple-900">Total Workflows</CardTitle>
               <Activity className="h-4 w-4 text-purple-600" />
             </CardHeader>
             <CardContent>
-              {loading ? (
+              {workflowsLoading ? (
                 <div className="flex items-center space-x-2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600"></div>
                   <span className="text-sm text-purple-700">Loading...</span>
                 </div>
-              ) : error ? (
-                <div className="text-sm text-red-600">Error loading data</div>
               ) : (
                 <>
-                  <div className="text-2xl font-bold text-purple-900">{stats.totalWorkflows}</div>
+                  <div className="text-2xl font-bold text-purple-900">{workflows.length}</div>
                   <p className="text-xs text-purple-700">
                     Across all instances
                   </p>
@@ -179,48 +240,24 @@ export default function WorkflowsPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-purple-50 to-fuchsia-100 border-purple-200">
+          <Card className="bg-gradient-to-br from-amber-50 to-orange-100 border-amber-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-purple-900">Active Workflows</CardTitle>
-              <CheckCircle className="h-4 w-4 text-purple-600" />
+              <CardTitle className="text-sm font-medium text-amber-900">Archived Workflows</CardTitle>
+              <Archive className="h-4 w-4 text-amber-600" />
             </CardHeader>
             <CardContent>
-              {loading ? (
+              {workflowsLoading ? (
                 <div className="flex items-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600"></div>
-                  <span className="text-sm text-purple-700">Loading...</span>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-amber-600"></div>
+                  <span className="text-sm text-amber-700">Loading...</span>
                 </div>
-              ) : error ? (
-                <div className="text-sm text-red-600">Error loading data</div>
               ) : (
                 <>
-                  <div className="text-2xl font-bold text-purple-800">{stats.activeWorkflows}</div>
-                  <p className="text-xs text-purple-700">
-                    Currently running
-                  </p>
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-purple-50 to-fuchsia-100 border-purple-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-purple-900">Inactive Workflows</CardTitle>
-              <XCircle className="h-4 w-4 text-purple-500" />
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="flex items-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600"></div>
-                  <span className="text-sm text-purple-700">Loading...</span>
-                </div>
-              ) : error ? (
-                <div className="text-sm text-red-600">Error loading data</div>
-              ) : (
-                <>
-                  <div className="text-2xl font-bold text-purple-700">{stats.inactiveWorkflows}</div>
-                  <p className="text-xs text-purple-700">
-                    Not running
+                  <div className="text-2xl font-bold text-amber-800">
+                    {workflows.filter(w => !w.name.startsWith('(')).length}
+                  </div>
+                  <p className="text-xs text-amber-700">
+                    Archived flows
                   </p>
                 </>
               )}
@@ -231,10 +268,51 @@ export default function WorkflowsPage() {
         {/* Workflows List */}
         <Card className="bg-gradient-to-br from-purple-50 to-fuchsia-100 border-purple-200">
           <CardHeader>
-            <CardTitle className="text-purple-900">Workflow Details</CardTitle>
-            <CardDescription className="text-purple-700">
-              All workflows across your n8n instances
-            </CardDescription>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <CardTitle className="text-purple-900">Workflow Details</CardTitle>
+                <CardDescription className="text-purple-700">
+                  All workflows across your n8n instances
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-2 border rounded-md p-1 bg-white">
+                <Button
+                  variant={filterStatus === 'all' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setFilterStatus('all')}
+                  className="h-8"
+                >
+                  All
+                </Button>
+                <Button
+                  variant={filterStatus === 'active' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setFilterStatus('active')}
+                  className={`h-8 ${filterStatus === 'active' ? 'bg-green-600 hover:bg-green-700' : ''}`}
+                >
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  Active
+                </Button>
+                <Button
+                  variant={filterStatus === 'inactive' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setFilterStatus('inactive')}
+                  className="h-8"
+                >
+                  <XCircle className="h-3 w-3 mr-1" />
+                  Inactive
+                </Button>
+                <Button
+                  variant={filterStatus === 'archived' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setFilterStatus('archived')}
+                  className={`h-8 ${filterStatus === 'archived' ? 'bg-amber-600 hover:bg-amber-700' : ''}`}
+                >
+                  <Archive className="h-3 w-3 mr-1" />
+                  Archived
+                </Button>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="max-h-[400px] overflow-y-auto">
             {workflowsLoading ? (
@@ -242,17 +320,21 @@ export default function WorkflowsPage() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
                 <span className="ml-2 text-sm text-purple-700">Loading workflows...</span>
               </div>
-            ) : workflows.length === 0 ? (
+            ) : sortedAndFilteredWorkflows.length === 0 ? (
               <div className="text-center py-12">
                 <Activity className="h-12 w-12 text-purple-400 mx-auto mb-4" />
-                <p className="text-purple-800 mb-2">No workflows found</p>
+                <p className="text-purple-800 mb-2">
+                  {workflows.length === 0 ? 'No workflows found' : `No ${filterStatus} workflows found`}
+                </p>
                 <p className="text-sm text-purple-600">
-                  Add an n8n instance to start tracking workflows
+                  {workflows.length === 0 
+                    ? 'Add an n8n instance to start tracking workflows'
+                    : 'Try selecting a different filter'}
                 </p>
               </div>
             ) : (
               <div className="space-y-3">
-                {workflows.map((workflow) => {
+                {sortedAndFilteredWorkflows.map((workflow) => {
                   const isExpanded = expandedWorkflowId === `${workflow.instanceId}-${workflow.id}`
                   const nodeTypes = workflow.nodes 
                     ? [...new Set(workflow.nodes.map(node => node.type.split('.').pop()))]
@@ -260,6 +342,10 @@ export default function WorkflowsPage() {
                   const credentialCount = workflow.nodes
                     ? workflow.nodes.filter(node => node.credentials && Object.keys(node.credentials).length > 0).length
                     : 0
+                  
+                  // Determine workflow status based on naming convention
+                  const isArchived = !workflow.name.startsWith('(')
+                  const workflowStatus = isArchived ? 'archived' : (workflow.isActive ? 'active' : 'inactive')
                   
                   return (
                     <div 
@@ -277,11 +363,16 @@ export default function WorkflowsPage() {
                           <h3 className="font-semibold text-gray-900 truncate">{workflow.name}</h3>
                           
                           <Badge 
-                            variant={workflow.isActive ? "default" : "secondary"}
-                            className={`flex-shrink-0 ${workflow.isActive ? "bg-green-100 text-green-800 hover:bg-green-100" : ""}`}
+                            variant={workflowStatus === 'active' ? "default" : "secondary"}
+                            className={`flex-shrink-0 ${
+                              workflowStatus === 'active' ? "bg-green-100 text-green-800 hover:bg-green-100" : 
+                              workflowStatus === 'archived' ? "bg-amber-100 text-amber-800 hover:bg-amber-100" : ""
+                            }`}
                           >
-                            {workflow.isActive ? (
+                            {workflowStatus === 'active' ? (
                               <><CheckCircle className="h-3 w-3 mr-1" /> Active</>
+                            ) : workflowStatus === 'archived' ? (
+                              <><Archive className="h-3 w-3 mr-1" /> Archived</>
                             ) : (
                               <><XCircle className="h-3 w-3 mr-1" /> Inactive</>
                             )}
