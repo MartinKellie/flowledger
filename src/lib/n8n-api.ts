@@ -367,7 +367,8 @@ export class N8nApiClient {
           metadata: {
             deprecatedNodeType: node.type,
             recommendedReplacement: deprecatedInfo.replacement,
-            reason: deprecatedInfo.reason
+            reason: deprecatedInfo.reason,
+            source: 'static'
           }
         })
       }
