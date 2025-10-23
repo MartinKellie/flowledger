@@ -42,22 +42,16 @@ export default function InstancesPage() {
           const instancesWithRealData = await Promise.all(
             result.data.map(async (instance: any) => {
               try {
-                // Fetch real workflows and credentials
-                const [workflowsResponse, credentialsResponse] = await Promise.all([
-                  fetch(`/api/instances/${instance.id}/workflows`),
-                  fetch(`/api/instances/${instance.id}/credentials`)
-                ])
-                
+                // Fetch real workflows
+                const workflowsResponse = await fetch(`/api/instances/${instance.id}/workflows`)
                 const workflowsResult = await workflowsResponse.json()
-                const credentialsResult = await credentialsResponse.json()
                 
                 return {
                   ...instance,
                   totalWorkflows: workflowsResult.success ? workflowsResult.breakdown?.total || 0 : 0,
                   activeWorkflows: workflowsResult.success ? workflowsResult.breakdown?.active || 0 : 0,
                   inactiveWorkflows: workflowsResult.success ? workflowsResult.breakdown?.inactive || 0 : 0,
-                  totalCredentials: credentialsResult.success ? credentialsResult.count : 0,
-                  activeFindings: 0, // Will be updated after scan
+                  archivedWorkflows: workflowsResult.success ? workflowsResult.breakdown?.archived || 0 : 0,
                   lastScanned: instance.lastScanned || new Date(Date.now() - 24 * 60 * 60 * 1000),
                 }
               } catch (error) {
@@ -65,8 +59,9 @@ export default function InstancesPage() {
                 return {
                   ...instance,
                   totalWorkflows: 0,
-                  totalCredentials: 0,
-                  activeFindings: 0,
+                  activeWorkflows: 0,
+                  inactiveWorkflows: 0,
+                  archivedWorkflows: 0,
                   lastScanned: new Date(Date.now() - 24 * 60 * 60 * 1000),
                 }
               }
@@ -160,28 +155,47 @@ export default function InstancesPage() {
               <CardContent>
                 <div className="space-y-4">
                   {/* Stats */}
-                  <div className="grid grid-cols-2 gap-4 text-center">
-                    <div>
-                      <div className="text-2xl font-bold text-blue-700">
-                        {instance.totalWorkflows}
-                      </div>
-                      <div className="text-xs text-blue-800">Total Workflows</div>
-                      <div className="text-xs text-blue-700">
-                        {instance.activeWorkflows} active
-                      </div>
-                      <div className="text-xs text-blue-600">
-                        {instance.inactiveWorkflows} inactive
+                  <div className="space-y-3">
+                    {/* Workflows Breakdown */}
+                    <div className="bg-white/50 rounded-lg p-3 border border-blue-200">
+                      <div className="text-sm font-semibold text-blue-900 mb-2">Workflows ({instance.totalWorkflows})</div>
+                      <div className="grid grid-cols-3 gap-2 text-xs">
+                        <div className="text-center">
+                          <div className="text-lg font-bold text-green-600">{instance.activeWorkflows}</div>
+                          <div className="text-green-700">Active</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-lg font-bold text-orange-600">{instance.inactiveWorkflows}</div>
+                          <div className="text-orange-700">Inactive</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-lg font-bold text-amber-600">{instance.archivedWorkflows}</div>
+                          <div className="text-amber-700">Archived</div>
+                        </div>
                       </div>
                     </div>
-                    <div>
-                      <div className="text-2xl font-bold text-blue-700">
-                        {instance.totalCredentials}
+
+                    {/* Instance Status */}
+                    <div className="bg-white/50 rounded-lg p-3 border border-blue-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="text-sm font-semibold text-blue-900">Status</div>
+                          {instance.isActive ? (
+                            <div className="flex items-center gap-1 text-green-600">
+                              <CheckCircle className="h-4 w-4" />
+                              <span className="text-xs">Connected</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1 text-red-600">
+                              <XCircle className="h-4 w-4" />
+                              <span className="text-xs">Disconnected</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-xs text-blue-700">
+                          {instance.environment}
+                        </div>
                       </div>
-                      <div className="text-xs text-blue-800">Credentials</div>
-                      <div className="text-2xl font-bold text-blue-700 mt-2">
-                        {instance.activeFindings}
-                      </div>
-                      <div className="text-xs text-blue-800">Findings</div>
                     </div>
                   </div>
 
@@ -218,7 +232,7 @@ export default function InstancesPage() {
                           if (result.success) {
                             console.log('Scan completed:', result.data)
                             const stats = result.data.stats
-                            alert(`Scan completed!\n\nWorkflows:\n- ${stats.workflows.total} total\n- ${stats.workflows.active} active\n- ${stats.workflows.inactive} inactive\n\nCredentials: ${stats.totalCredentials}\nSecurity Findings: ${stats.activeFindings}\n\nCheck console for details.`)
+                            alert(`Scan completed!\n\nWorkflows:\n- ${stats.workflows.total} total\n- ${stats.workflows.active} active\n- ${stats.workflows.inactive} inactive\n- ${stats.workflows.archived} archived\n\nSecurity Findings: ${stats.activeFindings} found\n\nCheck the Security Findings page for details.`)
                             
                             // Refresh the instances to show updated data
                             window.location.reload()

@@ -22,16 +22,32 @@ export async function GET(
     const n8nClient = new N8nApiClient(instance.url, instance.apiKey)
     const allWorkflows = await n8nClient.getWorkflows()
     
-    // Categorize workflows by status using n8n API data
-    const activeWorkflows = allWorkflows.filter(workflow => workflow.isActive)
-    const inactiveWorkflows = allWorkflows.filter(workflow => !workflow.isActive)
+    // Categorize workflows using bracket naming convention
+    // Workflows starting with ( are Active/Inactive based on n8n switch
+    // Workflows without ( prefix are Archived
+    const activeWorkflows = allWorkflows.filter(workflow => 
+      workflow.name?.startsWith('(') && workflow.isActive
+    )
+    const inactiveWorkflows = allWorkflows.filter(workflow => 
+      workflow.name?.startsWith('(') && !workflow.isActive
+    )
+    const archivedWorkflows = allWorkflows.filter(workflow => 
+      !workflow.name?.startsWith('(')
+    )
     
     // Transform workflows to include instance ID and status
-    const workflowsWithInstance = allWorkflows.map(workflow => ({
-      ...workflow,
-      instanceId: instanceId,
-      status: workflow.isActive ? 'active' : 'inactive'
-    }))
+    const workflowsWithInstance = allWorkflows.map(workflow => {
+      let status = 'archived' // default
+      if (workflow.name?.startsWith('(')) {
+        status = workflow.isActive ? 'active' : 'inactive'
+      }
+      
+      return {
+        ...workflow,
+        instanceId: instanceId,
+        status: status
+      }
+    })
 
     return NextResponse.json({
       success: true,
@@ -40,7 +56,8 @@ export async function GET(
       breakdown: {
         total: allWorkflows.length,
         active: activeWorkflows.length,
-        inactive: inactiveWorkflows.length
+        inactive: inactiveWorkflows.length,
+        archived: archivedWorkflows.length
       }
     })
   } catch (error) {

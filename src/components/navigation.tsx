@@ -34,13 +34,26 @@ export function Navigation() {
   }
 
   return (
-    <nav className="bg-white shadow-sm border-b">
-      <div className="container mx-auto px-4">
+    <nav className="relative bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 shadow-lg border-b border-emerald-300 overflow-hidden">
+      {/* Sparkly Animation Background */}
+      <div className="absolute inset-0 opacity-30">
+        <div className="absolute top-2 left-4 w-2 h-2 bg-white rounded-full animate-pulse"></div>
+        <div className="absolute top-6 right-8 w-1 h-1 bg-white rounded-full animate-ping"></div>
+        <div className="absolute top-4 left-1/4 w-1.5 h-1.5 bg-white rounded-full animate-bounce"></div>
+        <div className="absolute top-8 right-1/3 w-1 h-1 bg-white rounded-full animate-pulse"></div>
+        <div className="absolute top-3 right-1/4 w-2 h-2 bg-white rounded-full animate-ping"></div>
+        <div className="absolute top-7 left-1/3 w-1 h-1 bg-white rounded-full animate-bounce"></div>
+        <div className="absolute top-5 right-1/2 w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+        <div className="absolute top-1 left-1/2 w-1 h-1 bg-white rounded-full animate-ping"></div>
+        <div className="absolute top-9 right-1/5 w-2 h-2 bg-white rounded-full animate-bounce"></div>
+      </div>
+      
+      <div className="container mx-auto px-4 relative z-10">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Shield className="h-8 w-8 text-blue-600 mr-2" />
-            <span className="text-xl font-bold text-gray-900">FlowLedger</span>
+            <Shield className="h-8 w-8 text-white mr-2 drop-shadow-lg" />
+            <span className="text-xl font-bold text-white drop-shadow-lg">FlowLedger</span>
           </div>
 
           {/* Desktop Navigation */}
@@ -51,7 +64,7 @@ export function Navigation() {
                 <button
                   key={item.name}
                   onClick={() => router.push(item.href)}
-                  className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+                  className="flex items-center space-x-2 text-white/90 hover:text-white hover:bg-white/20 px-3 py-2 rounded-lg transition-all duration-200 backdrop-blur-sm"
                 >
                   <Icon className="h-4 w-4" />
                   <span>{item.name}</span>
@@ -62,22 +75,30 @@ export function Navigation() {
 
           {/* User Menu */}
           <div className="hidden md:flex items-center space-x-4">
-            <VersionDisplay variant="minimal" className="text-xs text-gray-500" />
+            <VersionDisplay variant="minimal" className="text-xs text-white/80" />
             {session ? (
               <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2">
-                  <User className="h-4 w-4 text-gray-600" />
-                  <span className="text-sm text-gray-600">
+                <div className="flex items-center space-x-2 text-white/90">
+                  <User className="h-4 w-4" />
+                  <span className="text-sm">
                     {session.user?.name || session.user?.email}
                   </span>
                 </div>
-                <Button variant="outline" size="sm" onClick={handleSignOut}>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleSignOut}
+                  className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:border-white/50 backdrop-blur-sm"
+                >
                   <LogOut className="h-4 w-4 mr-2" />
                   Sign Out
                 </Button>
               </div>
             ) : (
-              <Button onClick={() => router.push('/auth/signin')}>
+              <Button 
+                onClick={() => router.push('/auth/signin')}
+                className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:border-white/50 backdrop-blur-sm"
+              >
                 Sign In
               </Button>
             )}
@@ -89,6 +110,7 @@ export function Navigation() {
               variant="ghost"
               size="sm"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="text-white hover:bg-white/20"
             >
               {isMobileMenuOpen ? (
                 <X className="h-5 w-5" />
@@ -101,7 +123,7 @@ export function Navigation() {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t bg-white">
+          <div className="md:hidden border-t border-white/30 bg-gradient-to-b from-emerald-600 to-green-600">
             <div className="px-2 pt-2 pb-3 space-y-1">
               {navigationItems.map((item) => {
                 const Icon = item.icon
@@ -112,7 +134,7 @@ export function Navigation() {
                       router.push(item.href)
                       setIsMobileMenuOpen(false)
                     }}
-                    className="flex items-center space-x-2 w-full px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
+                    className="flex items-center space-x-2 w-full px-3 py-2 text-white/90 hover:text-white hover:bg-white/20 rounded-md transition-all duration-200 backdrop-blur-sm"
                   >
                     <Icon className="h-4 w-4" />
                     <span>{item.name}</span>
@@ -120,30 +142,30 @@ export function Navigation() {
                 )
               })}
               
-              <div className="border-t pt-3 mt-3">
+              <div className="border-t border-white/30 pt-3 mt-3">
                 <div className="px-3 py-2">
-                  <VersionDisplay variant="minimal" className="text-xs text-gray-500" />
+                  <VersionDisplay variant="minimal" className="text-xs text-white/80" />
                 </div>
               </div>
               
               {session ? (
-                <div className="border-t pt-3 mt-3">
-                  <div className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-600">
+                <div className="border-t border-white/30 pt-3 mt-3">
+                  <div className="flex items-center space-x-2 px-3 py-2 text-sm text-white/90">
                     <User className="h-4 w-4" />
                     <span>{session.user?.name || session.user?.email}</span>
                   </div>
                   <button
                     onClick={handleSignOut}
-                    className="flex items-center space-x-2 w-full px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
+                    className="flex items-center space-x-2 w-full px-3 py-2 text-white/90 hover:text-white hover:bg-white/20 rounded-md transition-all duration-200 backdrop-blur-sm"
                   >
                     <LogOut className="h-4 w-4" />
                     <span>Sign Out</span>
                   </button>
                 </div>
               ) : (
-                <div className="border-t pt-3 mt-3">
+                <div className="border-t border-white/30 pt-3 mt-3">
                   <Button 
-                    className="w-full" 
+                    className="w-full bg-white/10 border-white/30 text-white hover:bg-white/20 hover:border-white/50 backdrop-blur-sm" 
                     onClick={() => {
                       router.push('/auth/signin')
                       setIsMobileMenuOpen(false)

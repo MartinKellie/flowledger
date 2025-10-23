@@ -36,13 +36,20 @@ export async function POST(
       return []
     })
     
-    // Categorize workflows by status using n8n API data
-    const activeWorkflows = allWorkflows.filter(workflow => workflow.isActive)
-    const inactiveWorkflows = allWorkflows.filter(workflow => !workflow.isActive)
+    // Categorize workflows using bracket naming convention
+    const activeWorkflows = allWorkflows.filter(workflow => 
+      workflow.name?.startsWith('(') && workflow.isActive
+    )
+    const inactiveWorkflows = allWorkflows.filter(workflow => 
+      workflow.name?.startsWith('(') && !workflow.isActive
+    )
+    const archivedWorkflows = allWorkflows.filter(workflow => 
+      !workflow.name?.startsWith('(')
+    )
     
     // Use active workflows for security analysis
     const workflows = activeWorkflows
-    console.log(`Found ${allWorkflows.length} total workflows: ${activeWorkflows.length} active, ${inactiveWorkflows.length} inactive`)
+    console.log(`Found ${allWorkflows.length} total workflows: ${activeWorkflows.length} active, ${inactiveWorkflows.length} inactive, ${archivedWorkflows.length} archived`)
     
     // Try to fetch credentials, but handle gracefully if not available
     let credentials = []
@@ -112,7 +119,8 @@ export async function POST(
       workflows: {
         total: allWorkflows.length,
         active: activeWorkflows.length,
-        inactive: inactiveWorkflows.length
+        inactive: inactiveWorkflows.length,
+        archived: archivedWorkflows.length
       },
       totalCredentials: credentials.length,
       activeFindings: findings.length,
