@@ -12,15 +12,22 @@ import {
   User,
   Menu,
   X,
-  Server
+  Server,
+  Search
 } from 'lucide-react'
 import { useState } from 'react'
 import { VersionDisplay } from '@/components/version-display'
+import { SearchModal } from '@/components/search-modal'
+import { useInstances } from '@/hooks/use-instances'
+import { useWorkflows } from '@/hooks/use-workflows'
 
 export function Navigation() {
   const { data: session } = useSession()
   const router = useRouter()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const { instances } = useInstances()
+  const { workflows } = useWorkflows()
 
   const navigationItems = [
     { name: 'Dashboard', href: '/dashboard', icon: Shield },
@@ -75,6 +82,15 @@ export function Navigation() {
 
           {/* User Menu */}
           <div className="hidden md:flex items-center space-x-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsSearchOpen(true)}
+              className="text-white/90 hover:bg-white/20 backdrop-blur-sm"
+            >
+              <Search className="h-4 w-4 mr-2" />
+              Search
+            </Button>
             <VersionDisplay variant="minimal" className="text-xs text-white/80" />
             {session ? (
               <div className="flex items-center space-x-4">
@@ -179,6 +195,14 @@ export function Navigation() {
           </div>
         )}
       </div>
+
+      {/* Search Modal */}
+      <SearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        workflows={workflows}
+        instances={instances}
+      />
     </nav>
   )
 }
