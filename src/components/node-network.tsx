@@ -1,8 +1,15 @@
 'use client'
 
-import { useCallback, useMemo } from 'react'
-import ForceGraph2D from 'react-force-graph-2d'
+import { useCallback, useMemo, useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import { WorkflowWithInstance } from '@/app/workflows/page'
+import { X } from 'lucide-react'
+
+// Dynamically import ForceGraph2D to avoid SSR issues
+const ForceGraph2D = dynamic(() => import('react-force-graph-2d'), {
+  ssr: false,
+  loading: () => <div className="flex items-center justify-center h-full">Loading graph...</div>
+})
 
 interface GraphNode {
   id: string
@@ -25,9 +32,11 @@ interface NodeNetworkProps {
   workflows: WorkflowWithInstance[]
   width?: number
   height?: number
+  isModal?: boolean
+  onClose?: () => void
 }
 
-export function NodeNetwork({ workflows, width = 800, height = 600 }: NodeNetworkProps) {
+export function NodeNetwork({ workflows, width = 800, height = 600, isModal = false, onClose }: NodeNetworkProps) {
   // Process workflow data into graph format
   const { nodes, links } = useMemo(() => {
     const nodeMap = new Map<string, GraphNode>()
@@ -131,7 +140,7 @@ export function NodeNetwork({ workflows, width = 800, height = 600 }: NodeNetwor
   // Get link color
   const getLinkColor = useCallback(() => '#94a3b8', []) // slate-400
 
-  return (
+  const graphContent = (
     <div className="w-full h-full bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
       <ForceGraph2D
         graphData={{ nodes, links }}
@@ -180,4 +189,33 @@ export function NodeNetwork({ workflows, width = 800, height = 600 }: NodeNetwor
       />
     </div>
   )
+
+  if (isModal) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div className="relative w-[85vw] h-[85vh] bg-white rounded-lg shadow-2xl overflow-hidden">
+          {/* Modal Header */}
+          <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-indigo-50">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Node Network</h2>
+              <p className="text-sm text-gray-600">Interactive workflow and node visualization</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          
+          {/* Modal Content */}
+          <div className="h-[calc(100%-80px)] p-4">
+            {graphContent}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return graphContent
 }

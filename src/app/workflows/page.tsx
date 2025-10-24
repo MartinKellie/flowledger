@@ -277,24 +277,15 @@ export default function WorkflowsPage() {
           </Card>
         </div>
 
-        {/* Node Network Visualization */}
+        {/* Node Network Modal */}
         {showNodeNetwork && (
-          <Card className="bg-gradient-to-br from-purple-50 to-indigo-100 border-purple-200 mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-purple-900">
-                <Network className="h-5 w-5" />
-                Node Network
-              </CardTitle>
-              <CardDescription className="text-purple-700">
-                Interactive visualization showing workflows and their node connections
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[600px] w-full">
-                <NodeNetwork workflows={workflows} width={800} height={600} />
-              </div>
-            </CardContent>
-          </Card>
+          <NodeNetwork 
+            workflows={workflows} 
+            width={1200} 
+            height={800}
+            isModal={true}
+            onClose={() => setShowNodeNetwork(false)}
+          />
         )}
 
         {/* Workflows List */}
