@@ -45,12 +45,15 @@ export function NodeNetwork({ workflows, width = 800, height = 600, isModal = fa
     const linkSet = new Set<string>()
     const links: GraphLink[] = []
 
-    // Add workflow nodes
-    workflows.forEach(workflow => {
+    // Filter out archived workflows (those not starting with '(')
+    const activeWorkflows = workflows.filter(workflow => 
+      workflow.name?.startsWith('(')
+    )
+
+    // Add workflow nodes (only active/inactive, no archived)
+    activeWorkflows.forEach(workflow => {
       const workflowId = `workflow-${workflow.id}`
-      const workflowStatus = workflow.name?.startsWith('(') 
-        ? (workflow.isActive ? 'active' : 'inactive')
-        : 'archived'
+      const workflowStatus = workflow.isActive ? 'active' : 'inactive'
       
       nodeMap.set(workflowId, {
         id: workflowId,
@@ -168,10 +171,6 @@ export function NodeNetwork({ workflows, width = 800, height = 600, isModal = fa
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-amber-500 border-2 border-amber-600"></div>
             <span className="font-medium">Inactive Workflows</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-gray-500 border-2 border-gray-600"></div>
-            <span className="font-medium">Archived Workflows</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-blue-400"></div>
