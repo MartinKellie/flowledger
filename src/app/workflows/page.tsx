@@ -23,9 +23,11 @@ import {
   Tag,
   Boxes,
   ExternalLink,
-  Archive
+  Archive,
+  Network
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { NodeNetwork } from '@/components/node-network'
 import type { Workflow } from '@/types'
 
 interface WorkflowWithInstance extends Partial<Workflow> {
@@ -54,6 +56,7 @@ export default function WorkflowsPage() {
   const [workflowsLoading, setWorkflowsLoading] = useState(true)
   const [expandedWorkflowId, setExpandedWorkflowId] = useState<string | null>(null)
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive' | 'archived'>('all')
+  const [showNodeNetwork, setShowNodeNetwork] = useState(false)
 
   useEffect(() => {
     if (status === 'loading') return
@@ -158,14 +161,23 @@ export default function WorkflowsPage() {
               Monitor and manage workflows across all your n8n instances
             </p>
           </div>
-          <Button
-            variant="outline"
-            onClick={handleRefresh}
-            disabled={loading || workflowsLoading}
-          >
-            <RefreshCw className={`mr-2 h-4 w-4 ${(loading || workflowsLoading) ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              onClick={() => setShowNodeNetwork(!showNodeNetwork)}
+              className="bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              <Network className="mr-2 h-4 w-4" />
+              {showNodeNetwork ? 'Hide' : 'Show'} Node Network
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleRefresh}
+              disabled={loading || workflowsLoading}
+            >
+              <RefreshCw className={`mr-2 h-4 w-4 ${(loading || workflowsLoading) ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+          </div>
         </div>
 
         {/* Stats Overview */}
@@ -264,6 +276,26 @@ export default function WorkflowsPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Node Network Visualization */}
+        {showNodeNetwork && (
+          <Card className="bg-gradient-to-br from-purple-50 to-indigo-100 border-purple-200 mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-purple-900">
+                <Network className="h-5 w-5" />
+                Node Network
+              </CardTitle>
+              <CardDescription className="text-purple-700">
+                Interactive visualization showing workflows and their node connections
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[600px] w-full">
+                <NodeNetwork workflows={workflows} width={800} height={600} />
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Workflows List */}
         <Card className="bg-gradient-to-br from-purple-50 to-fuchsia-100 border-purple-200">
