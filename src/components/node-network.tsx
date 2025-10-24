@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useMemo, useState, useEffect } from 'react'
+import { useCallback, useMemo, useState, useEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { WorkflowWithInstance } from '@/app/workflows/page'
 import { X } from 'lucide-react'
