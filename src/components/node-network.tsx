@@ -57,7 +57,7 @@ export function NodeNetwork({ workflows, width = 800, height = 600, isModal = fa
         name: workflow.name || 'Unnamed Workflow',
         type: 'workflow',
         group: 'workflow',
-        size: 15,
+        size: 20,
         status: workflowStatus,
         instanceName: workflow.instanceName
       })
@@ -156,7 +156,30 @@ export function NodeNetwork({ workflows, width = 800, height = 600, isModal = fa
   const getLinkColor = useCallback(() => '#94a3b8', []) // slate-400
 
   const graphContent = (
-    <div className="w-full h-full bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
+    <div className="w-full h-full bg-gray-50 rounded-lg border border-gray-200 overflow-hidden relative">
+      {/* Legend */}
+      <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-gray-200">
+        <div className="text-sm font-semibold text-gray-800 mb-2">Legend</div>
+        <div className="space-y-1 text-xs">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-green-500 border-2 border-green-600"></div>
+            <span className="font-medium">Active Workflows</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-amber-500 border-2 border-amber-600"></div>
+            <span className="font-medium">Inactive Workflows</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-gray-500 border-2 border-gray-600"></div>
+            <span className="font-medium">Archived Workflows</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+            <span className="text-gray-600">Node Types</span>
+          </div>
+        </div>
+      </div>
+      
       <ForceGraph2D
         ref={fgRef}
         graphData={{ nodes, links }}
@@ -164,32 +187,54 @@ export function NodeNetwork({ workflows, width = 800, height = 600, isModal = fa
         height={isModal ? undefined : height}
         nodeLabel={(node: GraphNode) => {
           if (node.type === 'workflow') {
-            return `${node.name}\n${node.instanceName}\nStatus: ${node.status}`
+            return `🔄 ${node.name}\n📍 ${node.instanceName}\n📊 Status: ${node.status}`
           } else {
-            return `${node.name}\nType: ${node.group}`
+            return `⚙️ ${node.name}\n🏷️ Type: ${node.group}`
           }
         }}
         nodeColor={getNodeColor}
         nodeCanvasObject={(node: GraphNode, ctx: CanvasRenderingContext2D, globalScale: number) => {
           const label = node.name
-          const fontSize = node.type === 'workflow' ? 12 : 10
+          const fontSize = node.type === 'workflow' ? 14 : 10
           const textWidth = ctx.measureText(label).width
-          const bckgDimensions = [textWidth + 4, fontSize + 4].map(n => n + 4)
+          const padding = 8
+          const bckgDimensions = [textWidth + padding * 2, fontSize + padding]
 
-          // Draw background
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
-          ctx.fillRect(
-            node.x! - bckgDimensions[0] / 2,
-            node.y! - bckgDimensions[1] / 2,
-            bckgDimensions[0],
-            bckgDimensions[1]
-          )
+          // Draw background with different styles for workflows vs nodes
+          if (node.type === 'workflow') {
+            // Workflow nodes get a more prominent background
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)'
+            ctx.strokeStyle = node.status === 'active' ? '#10b981' : node.status === 'inactive' ? '#f59e0b' : '#6b7280'
+            ctx.lineWidth = 2
+          } else {
+            // Node type nodes get a simpler background
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.85)'
+            ctx.strokeStyle = '#e5e7eb'
+            ctx.lineWidth = 1
+          }
 
-          // Draw text
+          // Draw rounded rectangle background
+          const x = node.x! - bckgDimensions[0] / 2
+          const y = node.y! - bckgDimensions[1] / 2
+          const radius = 4
+          
+          ctx.beginPath()
+          ctx.roundRect(x, y, bckgDimensions[0], bckgDimensions[1], radius)
+          ctx.fill()
+          ctx.stroke()
+
+          // Draw text with different styling
           ctx.textAlign = 'center'
           ctx.textBaseline = 'middle'
-          ctx.fillStyle = '#374151'
           ctx.font = `${fontSize}px sans-serif`
+          
+          if (node.type === 'workflow') {
+            ctx.fillStyle = '#1f2937' // Darker text for workflows
+            ctx.font = `bold ${fontSize}px sans-serif`
+          } else {
+            ctx.fillStyle = '#6b7280' // Lighter text for node types
+          }
+          
           ctx.fillText(label, node.x!, node.y!)
         }}
         linkColor={getLinkColor}
