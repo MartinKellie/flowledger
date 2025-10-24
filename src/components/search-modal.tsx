@@ -177,20 +177,35 @@ export function SearchModal({ isOpen, onClose, workflows, instances }: SearchMod
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div className="relative w-[90vw] max-w-4xl h-[80vh] bg-white rounded-lg shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-indigo-50">
-          <div className="flex items-center gap-3">
-            <Search className="h-5 w-5 text-purple-600" />
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900">Search & Filter</h2>
-              <p className="text-sm text-gray-600">Find workflows, nodes, and instances</p>
-            </div>
+        <div className="relative bg-gradient-to-r from-indigo-400 via-purple-500 to-blue-500 shadow-lg border-b border-indigo-300 overflow-hidden">
+          {/* Sparkly Animation Background */}
+          <div className="absolute inset-0 opacity-30">
+            <div className="absolute top-2 left-4 w-2 h-2 bg-white rounded-full animate-pulse"></div>
+            <div className="absolute top-6 right-8 w-1 h-1 bg-white rounded-full animate-ping"></div>
+            <div className="absolute top-4 left-1/4 w-1.5 h-1.5 bg-white rounded-full animate-bounce"></div>
+            <div className="absolute top-8 right-1/3 w-1 h-1 bg-white rounded-full animate-pulse"></div>
+            <div className="absolute top-3 right-1/4 w-2 h-2 bg-white rounded-full animate-ping"></div>
+            <div className="absolute top-7 left-1/3 w-1 h-1 bg-white rounded-full animate-bounce"></div>
+            <div className="absolute top-5 right-1/2 w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+            <div className="absolute top-1 left-1/2 w-1 h-1 bg-white rounded-full animate-ping"></div>
+            <div className="absolute top-9 right-1/5 w-2 h-2 bg-white rounded-full animate-bounce"></div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          
+          <div className="relative z-10 flex items-center justify-between p-4">
+            <div className="flex items-center gap-3">
+              <Search className="h-5 w-5 text-white drop-shadow-lg" />
+              <div>
+                <h2 className="text-xl font-semibold text-white drop-shadow-lg">Search & Filter</h2>
+                <p className="text-sm text-white/90 drop-shadow-lg">Find workflows, nodes, and instances</p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-full transition-colors backdrop-blur-sm"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         <div className="flex h-[calc(100%-80px)]">
