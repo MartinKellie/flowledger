@@ -281,8 +281,6 @@ export default function WorkflowsPage() {
         {showNodeNetwork && (
           <NodeNetwork 
             workflows={workflows} 
-            width={1200} 
-            height={800}
             isModal={true}
             onClose={() => setShowNodeNetwork(false)}
           />

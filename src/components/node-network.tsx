@@ -37,6 +37,21 @@ interface NodeNetworkProps {
 }
 
 export function NodeNetwork({ workflows, width = 800, height = 600, isModal = false, onClose }: NodeNetworkProps) {
+  const fgRef = useRef<any>()
+  
+  // Handle graph sizing for modal
+  useEffect(() => {
+    if (isModal && fgRef.current) {
+      // Force the graph to resize to fit its container
+      setTimeout(() => {
+        fgRef.current?.d3Force('center')?.strength(0.1)
+        fgRef.current?.d3Force('charge')?.strength(-300)
+        fgRef.current?.d3Force('link')?.strength(0.1)
+        fgRef.current?.zoomToFit(400, 20)
+      }, 100)
+    }
+  }, [isModal, nodes, links])
+
   // Process workflow data into graph format
   const { nodes, links } = useMemo(() => {
     const nodeMap = new Map<string, GraphNode>()
@@ -143,9 +158,10 @@ export function NodeNetwork({ workflows, width = 800, height = 600, isModal = fa
   const graphContent = (
     <div className="w-full h-full bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
       <ForceGraph2D
+        ref={fgRef}
         graphData={{ nodes, links }}
-        width={width}
-        height={height}
+        width={isModal ? undefined : width}
+        height={isModal ? undefined : height}
         nodeLabel={(node: GraphNode) => {
           if (node.type === 'workflow') {
             return `${node.name}\n${node.instanceName}\nStatus: ${node.status}`
@@ -181,11 +197,19 @@ export function NodeNetwork({ workflows, width = 800, height = 600, isModal = fa
         linkDirectionalArrowLength={4}
         linkDirectionalArrowRelPos={1}
         cooldownTicks={100}
-        onEngineStop={() => console.log('Graph engine stopped')}
+        onEngineStop={() => {
+          if (isModal && fgRef.current) {
+            // Auto-fit the graph to the modal container
+            setTimeout(() => {
+              fgRef.current?.zoomToFit(400, 20)
+            }, 200)
+          }
+        }}
         d3AlphaDecay={0.02}
         d3VelocityDecay={0.3}
         enableZoomPanInteraction={true}
         enableNodeDrag={true}
+        nodeCanvasObjectMode={() => 'after'}
       />
     </div>
   )
@@ -209,7 +233,7 @@ export function NodeNetwork({ workflows, width = 800, height = 600, isModal = fa
           </div>
           
           {/* Modal Content */}
-          <div className="h-[calc(100%-80px)] p-4">
+          <div className="h-[calc(100%-80px)] w-full overflow-hidden">
             {graphContent}
           </div>
         </div>
