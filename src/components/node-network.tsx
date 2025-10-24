@@ -39,19 +39,6 @@ interface NodeNetworkProps {
 export function NodeNetwork({ workflows, width = 800, height = 600, isModal = false, onClose }: NodeNetworkProps) {
   const fgRef = useRef<any>()
   
-  // Handle graph sizing for modal
-  useEffect(() => {
-    if (isModal && fgRef.current) {
-      // Force the graph to resize to fit its container
-      setTimeout(() => {
-        fgRef.current?.d3Force('center')?.strength(0.1)
-        fgRef.current?.d3Force('charge')?.strength(-300)
-        fgRef.current?.d3Force('link')?.strength(0.1)
-        fgRef.current?.zoomToFit(400, 20)
-      }, 100)
-    }
-  }, [isModal, nodes, links])
-
   // Process workflow data into graph format
   const { nodes, links } = useMemo(() => {
     const nodeMap = new Map<string, GraphNode>()
@@ -113,6 +100,19 @@ export function NodeNetwork({ workflows, width = 800, height = 600, isModal = fa
       links
     }
   }, [workflows])
+
+  // Handle graph sizing for modal
+  useEffect(() => {
+    if (isModal && fgRef.current) {
+      // Force the graph to resize to fit its container
+      setTimeout(() => {
+        fgRef.current?.d3Force('center')?.strength(0.1)
+        fgRef.current?.d3Force('charge')?.strength(-300)
+        fgRef.current?.d3Force('link')?.strength(0.1)
+        fgRef.current?.zoomToFit(400, 20)
+      }, 100)
+    }
+  }, [isModal, nodes, links])
 
   // Categorize node types into groups
   function getNodeGroup(nodeType: string): string {
